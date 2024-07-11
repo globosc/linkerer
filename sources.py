@@ -1,14 +1,10 @@
-import requests
-from bs4 import BeautifulSoup
-from datetime import datetime
-import json
-import re
-import random
-import time
+import os
 
-# Configuración básica
-FECHA_ACTUAL = datetime.now().strftime("%Y-%m-%d")
+# Configuración de la carpeta de salida
+RUTA_SALIDA = "/home/globoscx/unews/salidas/input"
+os.makedirs(RUTA_SALIDA, exist_ok=True)
 
+# Definir los User-Agents
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/88.0 Safari/537.36",
@@ -35,61 +31,3 @@ CONSULTAS = [
     {"category": "Nacional", "site": "https://www.publimetro.cl/noticias/", "source": "Publimetro", "diminutive": "PM"},
     {"category": "Nacional", "site": "https://www.meganoticias.cl/nacional/", "source": "Meganoticias", "diminutive": "MN"},
 ]
-
-def obtener_enlaces_google(consulta):
-    """Realiza una búsqueda en Google y obtiene los enlaces de resultados."""
-    url = f"https://www.google.cl/search?q=site:{consulta['site']} after:{FECHA_ACTUAL}"
-    headers = {'User-Agent': random.choice(USER_AGENTS)}
-    
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        resultados = soup.find_all('div', class_='yuRUbf')
-        enlaces = [resultado.find('a')['href'] for resultado in resultados if resultado.find('a')]
-        
-        # Pausa para evitar la detección
-        time.sleep(random.uniform(2, 5))
-        
-        return enlaces
-    except requests.exceptions.HTTPError as err:
-        print(f"Error HTTP al solicitar {consulta['source']}: {err}")
-    except requests.exceptions.RequestException as err:
-        print(f"Error al solicitar {consulta['source']}: {err}")
-    return []
-
-def limpiar_enlaces(enlaces):
-    """Elimina los parámetros UTM de los enlaces."""
-    return [re.sub(r"(?:&sa=|&ved=|&usg=|&cvid=|&PC=).*", "", enlace) for enlace in enlaces]
-
-def generar_json():
-    """Genera un JSON con los enlaces obtenidos y limpios."""
-    resultados = []
-    
-    for consulta in CONSULTAS:
-        enlaces = obtener_enlaces_google(consulta)
-        enlaces_limpios = limpiar_enlaces(enlaces)
-        
-        for enlace in enlaces_limpios:
-            resultados.append({
-                "url": enlace,
-                "category": consulta["category"],
-                "source": consulta["source"],
-                "diminutive": consulta["diminutive"]
-            })
-    
-    return resultados
-
-def guardar_resultados(resultados):
-    """Guarda los resultados en un archivo JSON."""
-    nombre_archivo = f'noticias_{FECHA_ACTUAL}.json'
-    
-    with open(nombre_archivo, 'w') as archivo_json:
-        json.dump(resultados, archivo_json, indent=2)
-    
-    print(f"Archivo JSON generado: {nombre_archivo}")
-
-if __name__ == "__main__":
-    resultados_json = generar_json()
-    guardar_resultados(resultados_json)
