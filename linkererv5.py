@@ -16,6 +16,35 @@ from sources import RUTA_SALIDA, USER_AGENTS, CONSULTAS
 # Configuración de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Lista de patrones exactos a excluir
+PATRONES_EXCLUIDOS = [
+    r'https://www.elmostrador.cl/noticias/pais/$',
+    r'https://www.meganoticias.cl/nacional/\?page=\d+$',
+    r'https://www.24horas.cl/actualidad/nacional/p/\d+$',
+    r'https://www.24horas.cl/actualidad/nacional\?$',
+    r'https://www.24horas.cl/actualidad/nacional$',
+    r'https://cambio21.cl/politica$',
+    r'https://www.df.cl/mercados$',
+    r'https://www.eldinamo.cl/pais/page/\d+/$',
+    r'https://www.elciudadano.com/actualidad/page/\d+/$',
+    r'https://www.elciudadano.com/actualidad/\?filter_by=\w+$',
+    r'https://www.elciudadano.com/actualidad/\?amp$',
+    r'https://www.chilevision.cl/noticias/nacional/?(\?.*)?$',  # Ajuste para coincidir con o sin / y con parámetros
+    r'https://www.adnradio.cl/noticias/$',
+    r'https://www.adnradio.cl/noticias/economia/$',
+    r'https://www.adnradio.cl/noticias/nacional/$',
+    r'https://www.adnradio.cl/noticias/politica/$',
+    r'https://www.eldinamo.cl/pais/page/\d+/\?page=\d+$',
+    r'https://www.24horas.cl/deportes$',
+    r'https://www.24horas.cl/deportes/futbol-internacional$',
+    r'https://www.24horas.cl/deportes/futbol-nacional$',
+    r'https://www.24horas.cl/deportes/futbol-nacional/colo-colo$',
+    r'https://www.ex-ante.cl/$',
+    r'https://www.cnnchile.com/deportes/$',
+    r'https://www.adnradio.cl/noticias/ciencia-y-tecnologia/$',
+    r'https://www.publimetro.cl/deportes/$'
+]
+
 def obtener_user_agent():
     """Devuelve un User-Agent aleatorio de la lista."""
     return random.choice(USER_AGENTS)
@@ -42,6 +71,17 @@ def limpiar_enlaces(enlaces):
     """Elimina los parámetros UTM y otros parámetros de seguimiento de los enlaces."""
     return [re.sub(r"(?:\?.*?utm.*|&.*|#.*)", "", enlace) for enlace in enlaces]
 
+def filtrar_exclusiones(enlaces):
+    """Filtra los enlaces que coinciden con los patrones de exclusión."""
+    enlaces_filtrados = []
+    for enlace in enlaces:
+        excluido = any(re.match(patron, enlace) for patron in PATRONES_EXCLUIDOS)
+        if excluido:
+            logging.info(f"Enlace excluido por patrón: {enlace}")
+        else:
+            enlaces_filtrados.append(enlace)
+    return enlaces_filtrados
+
 async def generar_json():
     """Genera un JSON con los enlaces obtenidos y limpios."""
     async with ClientSession() as session:
@@ -51,12 +91,14 @@ async def generar_json():
     resultados_json = []
     for consulta, enlaces in zip(CONSULTAS, resultados):
         enlaces_limpios = limpiar_enlaces(enlaces)
-        for enlace in enlaces_limpios:
+        enlaces_filtrados = filtrar_exclusiones(enlaces_limpios)
+        for enlace in enlaces_filtrados:
             resultados_json.append({
                 "url": enlace,
                 "category": consulta["category"],
                 "source": consulta["source"],
-                "diminutive": consulta["diminutive"]
+                "diminutive": consulta["diminutive"],
+                "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             })
     return resultados_json
 
@@ -95,7 +137,7 @@ def guardar_resultados(resultados):
 
 def enviar_a_api(nombre_archivo):
     """Envía el archivo JSON generado a la API de acortamiento de enlaces."""
-    api_url = "http://172.22.0.2:5000/shortener/"
+    api_url = "http://192.168.2.113:5000/shortener/"
     try:
         with open(nombre_archivo, 'rb') as file:
             response = requests.post(api_url, files={"file": file})
