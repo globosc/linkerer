@@ -98,7 +98,15 @@ async def generar_json():
                 "category": consulta["category"],
                 "source": consulta["source"],
                 "diminutive": consulta["diminutive"],
-                "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "content_length": "",   # Campo vacío para content_length
+                "sentiment": "",        # Campo vacío para sentiment
+                "keywords": "",         # Campo vacío para keywords
+                "popularity": "",       # Campo vacío para popularity
+                "subcategory": "",      # Campo vacío para subcategory
+                "holding": "",          # Campo vacío para holding
+                "update_frequency": consulta.get("update_frequency", ""),
+                "content_type": consulta.get("content_type", "")
             })
     return resultados_json
 
