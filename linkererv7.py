@@ -4,20 +4,19 @@ from datetime import datetime, timedelta
 import json
 import re
 import random
-import time
 import logging
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import os
 import asyncio
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout
 from sources import RUTA_SALIDA, USER_AGENTS, CONSULTAS
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Lista de patrones exactos a excluir
-PATRONES_EXCLUIDOS = [
+# Precompilación de patrones para mejorar el rendimiento
+PATRONES_EXCLUIDOS = [re.compile(patron) for patron in [
     r'https://www.elmostrador.cl/noticias/pais/$',
     r'https://www.meganoticias.cl/nacional/\?page=\d+$',
     r'https://www.24horas.cl/actualidad/nacional/p/\d+$',
@@ -43,7 +42,7 @@ PATRONES_EXCLUIDOS = [
     r'https://www.cnnchile.com/deportes/$',
     r'https://www.adnradio.cl/noticias/ciencia-y-tecnologia/$',
     r'https://www.publimetro.cl/deportes/$'
-]
+]]
 
 def obtener_user_agent():
     """Devuelve un User-Agent aleatorio de la lista."""
@@ -53,33 +52,32 @@ async def obtener_enlaces_google(consulta, session):
     """Realiza una búsqueda en Google y obtiene los enlaces de resultados."""
     url = f"https://www.google.cl/search?q=site:{consulta['site']}+after:{datetime.now().strftime('%Y-%m-%d')}"
     headers = {'User-Agent': obtener_user_agent()}
+    timeout = ClientTimeout(total=10)  # Timeout explícito
 
     try:
-        async with session.get(url, headers=headers) as response:
+        async with session.get(url, headers=headers, timeout=timeout) as response:
             response.raise_for_status()
             text = await response.text()
             soup = BeautifulSoup(text, 'html.parser')
-            resultados = soup.find_all('div', class_='yuRUbf')
-            enlaces = [resultado.find('a')['href'] for resultado in resultados if resultado.find('a')]
+            resultados = [a_tag['href'] for a_tag in soup.find_all('a', href=True)]
             await asyncio.sleep(random.uniform(1, 3))
-            return enlaces
+            return resultados
+    except asyncio.TimeoutError:
+        logging.error(f"Timeout en la solicitud para {consulta['source']}")
+        return []
     except Exception as err:
         logging.error(f"Error al solicitar {consulta['source']}: {err}")
         return []
 
-def limpiar_enlaces(enlaces):
-    """Elimina los parámetros UTM y otros parámetros de seguimiento de los enlaces."""
-    return [re.sub(r"(?:\?.*?utm.*|&.*|#.*)", "", enlace) for enlace in enlaces]
-
-def filtrar_exclusiones(enlaces):
-    """Filtra los enlaces que coinciden con los patrones de exclusión."""
+def limpiar_y_filtrar_enlaces(enlaces):
+    """Limpia los enlaces y filtra los que coinciden con los patrones de exclusión."""
     enlaces_filtrados = []
     for enlace in enlaces:
-        excluido = any(re.match(patron, enlace) for patron in PATRONES_EXCLUIDOS)
-        if excluido:
-            logging.info(f"Enlace excluido por patrón: {enlace}")
+        enlace_limpio = re.sub(r"(?:\?.*?utm.*|&.*|#.*)", "", enlace)
+        if not any(patron.match(enlace_limpio) for patron in PATRONES_EXCLUIDOS):
+            enlaces_filtrados.append(enlace_limpio)
         else:
-            enlaces_filtrados.append(enlace)
+            logging.info(f"Enlace excluido por patrón: {enlace_limpio}")
     return enlaces_filtrados
 
 async def generar_json():
@@ -90,8 +88,7 @@ async def generar_json():
     
     resultados_json = []
     for consulta, enlaces in zip(CONSULTAS, resultados):
-        enlaces_limpios = limpiar_enlaces(enlaces)
-        enlaces_filtrados = filtrar_exclusiones(enlaces_limpios)
+        enlaces_filtrados = limpiar_y_filtrar_enlaces(enlaces)
         for enlace in enlaces_filtrados:
             resultados_json.append({
                 "url": enlace,
@@ -110,20 +107,28 @@ async def generar_json():
             })
     return resultados_json
 
-def cargar_resultados_anteriores():
+async def cargar_resultados_anteriores():
     """Carga los resultados del archivo JSON de la hora anterior si existe."""
     hora_actual = datetime.now()
+    tareas = []
+
     for i in range(1, 25):  # Intentar las últimas 24 horas
         hora_anterior = (hora_actual - timedelta(hours=i)).strftime("%Y%m%d_%H")
         nombre_archivo_anterior = os.path.join(RUTA_SALIDA, f'linkerer_{hora_anterior}.json')
         if os.path.exists(nombre_archivo_anterior):
-            try:
-                with open(nombre_archivo_anterior, 'r') as archivo_json:
-                    return json.load(archivo_json)
-            except IOError as e:
-                logging.error(f"Error al cargar el archivo JSON anterior: {e}")
-                return []
-    return []
+            tareas.append(cargar_json(nombre_archivo_anterior))
+
+    resultados_anteriores = await asyncio.gather(*tareas)
+    return [resultado for lista in resultados_anteriores for resultado in lista]
+
+async def cargar_json(ruta):
+    """Carga el archivo JSON de la ruta dada."""
+    try:
+        with open(ruta, 'r') as archivo_json:
+            return json.load(archivo_json)
+    except IOError as e:
+        logging.error(f"Error al cargar el archivo JSON {ruta}: {e}")
+        return []
 
 def filtrar_nuevos_resultados(resultados_nuevos, resultados_anteriores):
     """Filtra los resultados nuevos para eliminar los que ya existen en los resultados anteriores."""
@@ -156,7 +161,7 @@ def enviar_a_api(nombre_archivo):
 
 async def main():
     """Función principal que será invocada por DigitalOcean Functions."""
-    resultados_anteriores = cargar_resultados_anteriores()
+    resultados_anteriores = await cargar_resultados_anteriores()
     resultados_nuevos = await generar_json()
     if resultados_nuevos:
         resultados_filtrados = filtrar_nuevos_resultados(resultados_nuevos, resultados_anteriores)
