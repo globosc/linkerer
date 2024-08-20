@@ -59,7 +59,12 @@ async def obtener_enlaces_google(consulta, session):
             response.raise_for_status()
             text = await response.text()
             soup = BeautifulSoup(text, 'html.parser')
-            resultados = [a_tag['href'] for a_tag in soup.find_all('a', href=True)]
+            resultados = []
+            for a_tag in soup.find_all('a', href=True):
+                href = a_tag['href']
+                if href.startswith('/url?q='):
+                    url_real = href.split('/url?q=')[1].split('&')[0]
+                    resultados.append(url_real)
             await asyncio.sleep(random.uniform(1, 3))
             return resultados
     except asyncio.TimeoutError:
@@ -68,6 +73,7 @@ async def obtener_enlaces_google(consulta, session):
     except Exception as err:
         logging.error(f"Error al solicitar {consulta['source']}: {err}")
         return []
+
 
 def limpiar_y_filtrar_enlaces(enlaces):
     """Limpia los enlaces y filtra los que coinciden con los patrones de exclusión."""
