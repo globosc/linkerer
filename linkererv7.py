@@ -52,24 +52,16 @@ async def obtener_enlaces_google(consulta, session):
     """Realiza una búsqueda en Google y obtiene los enlaces de resultados."""
     url = f"https://www.google.cl/search?q=site:{consulta['site']}+after:{datetime.now().strftime('%Y-%m-%d')}"
     headers = {'User-Agent': obtener_user_agent()}
-    timeout = ClientTimeout(total=10)  # Timeout explícito
 
     try:
-        async with session.get(url, headers=headers, timeout=timeout) as response:
+        async with session.get(url, headers=headers) as response:
             response.raise_for_status()
             text = await response.text()
             soup = BeautifulSoup(text, 'html.parser')
-            resultados = []
-            for a_tag in soup.find_all('a', href=True):
-                href = a_tag['href']
-                if href.startswith('/url?q='):
-                    url_real = href.split('/url?q=')[1].split('&')[0]
-                    resultados.append(url_real)
+            resultados = soup.find_all('div', class_='yuRUbf')
+            enlaces = [resultado.find('a')['href'] for resultado in resultados if resultado.find('a')]
             await asyncio.sleep(random.uniform(1, 3))
-            return resultados
-    except asyncio.TimeoutError:
-        logging.error(f"Timeout en la solicitud para {consulta['source']}")
-        return []
+            return enlaces
     except Exception as err:
         logging.error(f"Error al solicitar {consulta['source']}: {err}")
         return []
@@ -111,6 +103,7 @@ async def generar_json():
                 "update_frequency": consulta.get("update_frequency", ""),
                 "content_type": consulta.get("content_type", "")
             })
+    logging.debug(f"JSON generado: {resultados_json}")
     return resultados_json
 
 async def cargar_resultados_anteriores():
@@ -125,7 +118,9 @@ async def cargar_resultados_anteriores():
             tareas.append(cargar_json(nombre_archivo_anterior))
 
     resultados_anteriores = await asyncio.gather(*tareas)
-    return [resultado for lista in resultados_anteriores for resultado in lista]
+    resultados_anteriores_flat = [resultado for lista in resultados_anteriores for resultado in lista]
+    logging.debug(f"Resultados anteriores cargados: {resultados_anteriores_flat}")
+    return resultados_anteriores_flat
 
 async def cargar_json(ruta):
     """Carga el archivo JSON de la ruta dada."""
@@ -139,7 +134,9 @@ async def cargar_json(ruta):
 def filtrar_nuevos_resultados(resultados_nuevos, resultados_anteriores):
     """Filtra los resultados nuevos para eliminar los que ya existen en los resultados anteriores."""
     urls_anteriores = {resultado['url'] for resultado in resultados_anteriores}
-    return [resultado for resultado in resultados_nuevos if resultado['url'] not in urls_anteriores]
+    resultados_filtrados = [resultado for resultado in resultados_nuevos if resultado['url'] not in urls_anteriores]
+    logging.debug(f"Resultados filtrados: {resultados_filtrados}")
+    return resultados_filtrados
 
 def guardar_resultados(resultados):
     """Guarda los resultados en un archivo JSON en la ruta especificada."""
@@ -167,20 +164,25 @@ def enviar_a_api(nombre_archivo):
 
 async def main():
     """Función principal que será invocada por DigitalOcean Functions."""
+    logging.info("Inicio de la función main")
+
     resultados_anteriores = await cargar_resultados_anteriores()
     resultados_nuevos = await generar_json()
+
     if resultados_nuevos:
         resultados_filtrados = filtrar_nuevos_resultados(resultados_nuevos, resultados_anteriores)
+
         if resultados_filtrados:
             nombre_archivo = guardar_resultados(resultados_filtrados)
             if nombre_archivo:
                 enviar_a_api(nombre_archivo)
-            return {"status": "success", "message": "Archivo JSON generado y enviado a la API correctamente."}
+            else:
+                logging.error("No se generó ningún archivo para enviar a la API.")
         else:
-            logging.info("No hay nuevos resultados para guardar.")
-            return {"status": "success", "message": "No hay nuevos resultados para guardar."}
+            logging.info("No hay nuevos resultados después de filtrar.")
     else:
-        return {"status": "failure", "message": "No se pudieron generar los resultados."}
+        logging.info("No se generaron nuevos resultados.")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
