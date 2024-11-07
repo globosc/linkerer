@@ -41,7 +41,8 @@ PATRONES_EXCLUIDOS = [re.compile(patron) for patron in [
     r'https://www.ex-ante.cl/$',
     r'https://www.cnnchile.com/deportes/$',
     r'https://www.adnradio.cl/noticias/ciencia-y-tecnologia/$',
-    r'https://www.publimetro.cl/deportes/$'
+    r'https://www.publimetro.cl/deportes/$',
+    r'https://puranoticia.pnt.cl/nacional/$'
 ]]
 
 def obtener_user_agent():
