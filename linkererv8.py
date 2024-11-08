@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from typing import List, Dict
 from aiohttp import ClientSession
-from sources import CONSULTAS, RUTA_SALIDA, USER_AGENTS
+from sourcesv1 import CONSULTAS, RUTA_SALIDA, USER_AGENTS
 import re
 
 # Configuración de logging
