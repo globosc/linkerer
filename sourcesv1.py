@@ -17,468 +17,293 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36"
 ]
 
-# Mantener la lista original de CONSULTAS
-CONSULTAS = [
-    {
-        "category": "Nacional",
-        "site": "https://www.latercera.com/nacional/noticia/",
-        "source": "La Tercera",
-        "diminutive": "LT",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "COPESA",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.biobiochile.cl/noticias/nacional/",
-        "source": "Radio BioBio",
-        "diminutive": "RBB",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Bío-Bío Comunicaciones",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.emol.com/noticias/Nacional/",
-        "source": "EMOL",
-        "diminutive": "EMOL",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "El Mercurio S.A.P.",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.eldesconcierto.cl/nacional/",
-        "source": "El Desconcierto",
-        "diminutive": "ELDS",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.eldinamo.cl/pais/",
-        "source": "El Dinamo",
-        "diminutive": "ELDI",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente*",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.elciudadano.com/actualidad/",
-        "source": "El Ciudadano",
-        "diminutive": "ELCI",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://cambio21.cl/politica",
-        "source": "Cambio21",
-        "diminutive": "C21",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.df.cl/mercados/",
-        "source": "Diario Financiero",
-        "diminutive": "DF",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Grupo Claro",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.chilevision.cl/noticias/nacional/",
-        "source": "Chilevision",
-        "diminutive": "CHV",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Paramount Global",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.24horas.cl/actualidad/nacional/",
-        "source": "24 Horas",
-        "diminutive": "24H",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "TVN",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.cooperativa.cl/noticias/pais/",
-        "source": "Cooperativa",
-        "diminutive": "Coop",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.cnnchile.com/pais/",
-        "source": "CNN Chile",
-        "diminutive": "CNN",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "CNN",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.t13.cl/noticia/nacional/",
-        "source": "Teletrece",
-        "diminutive": "T13",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "TV Medios",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.elmostrador.cl/noticias/pais/",
-        "source": "El Mostrador",
-        "diminutive": "ELMO",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.publimetro.cl/noticias/",
-        "source": "Publimetro",
-        "diminutive": "PM",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.meganoticias.cl/nacional/",
-        "source": "Meganoticias",
-        "diminutive": "MEGA",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Megamedia",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.adnradio.cl/noticias/",
-        "source": "ADN",
-        "diminutive": "ADN",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Ibero Americana Radio Chile",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Nacional",
-        "site": "https://www.ex-ante.cl/",
-        "source": "EX-ANTE",
-        "diminutive": "EX",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.latercera.com/el-deportivo/noticia/",
-        "source": "La Tercera Deportes",
-        "diminutive": "LT",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Copesa",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.biobiochile.cl/noticias/deportes/",
-        "source": "Radio BioBio",
-        "diminutive": "RBB",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Bío-Bío Comunicaciones",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.emol.com/noticias/Deportes/",
-        "source": "EMOL",
-        "diminutive": "EMOL",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "El Mercurio S.A.P.",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.eldinamo.cl/deportes/",
-        "source": "El Dinamo",
-        "diminutive": "ELDI",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente*",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.chilevision.cl/chv-deportes/noticias/",
-        "source": "Chilevision",
-        "diminutive": "CHV",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Paramount Global",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.24horas.cl/deportes/",
-        "source": "24 Horas",
-        "diminutive": "24H",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "TVN",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.alairelibre.cl/noticias/deportes/",
-        "source": "Al Aire Libre",
-        "diminutive": "ADN",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Compañía Chilena de Comunicaciones",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.cnnchile.com/deportes/",
-        "source": "CNN Chile",
-        "diminutive": "CNN",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "CNN",
-        "update_frequency": "hourly",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.deportes13.cl/futbol-chileno/",
-        "source": "Teletrece",
-        "diminutive": "T13",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.publimetro.cl/deportes/",
-        "source": "Publimetro",
-        "diminutive": "PM",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://www.meganoticias.cl/deportes/",
-        "source": "Meganoticias",
-        "diminutive": "MEGA",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Megamedia",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-    {
-        "category": "Deportes",
-        "site": "https://ellibero.cl/actualidad/",
-        "source": "El Libero",
-        "diminutive": "LIBERO",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },    
-    {
-        "category": "Nacional",
-        "site": "https://puranoticia.pnt.cl/nacional/",
-        "source": "Puranoticia",
-        "diminutive": "Puranoticia",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },      
-    {
-        "category": "Nacional",
-        "site": "https://www.diariousach.cl/actualidad/nacional",
-        "source": "Diario USACH",
-        "diminutive": "USACH",
-        "content_length": "",
-        "sentiment": "",
-        "keywords": "",
-        "popularity": "",
-        "subcategory": "",
-        "holding": "Independiente",
-        "update_frequency": "daily",
-        "content_type": "article"
-    },
-]
+# Definir categorías como Enum
+class NewsCategory(str, Enum):
+    NACIONAL = "nacional"
+    DEPORTES = "deportes"
+    ECONOMIA = "economia"  # Preparado para futura implementación
 
-# Agregar las mejoras manteniendo la compatibilidad
+# Estructura base de un medio
+@dataclass
+class MediaOutlet:
+    name: str
+    diminutive: str
+    holding: str
+    update_frequency: str
+    base_url: str
+    category_paths: Dict[NewsCategory, str]
+
+# Definir los medios y sus rutas por categoría
+MEDIA_OUTLETS = {
+    "latercera": MediaOutlet(
+        name="La Tercera",
+        diminutive="LT",
+        holding="COPESA",
+        update_frequency="hourly",
+        base_url="https://www.latercera.com",
+        category_paths={
+            NewsCategory.NACIONAL: "/nacional/noticia/",
+            NewsCategory.DEPORTES: "/el-deportivo/noticia/",
+        }
+    ),
+    "biobio": MediaOutlet(
+        name="Radio BioBio",
+        diminutive="RBB",
+        holding="Bío-Bío Comunicaciones",
+        update_frequency="hourly",
+        base_url="https://www.biobiochile.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticias/nacional/",
+            NewsCategory.DEPORTES: "/noticias/deportes/",
+        }
+    ),
+    "emol": MediaOutlet(
+        name="EMOL",
+        diminutive="EMOL",
+        holding="El Mercurio S.A.P.",
+        update_frequency="hourly",
+        base_url="https://www.emol.com",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticias/Nacional/",
+            NewsCategory.DEPORTES: "/noticias/Deportes/",
+        }
+    ),
+    "eldesconcierto": MediaOutlet(
+        name="El Desconcierto",
+        diminutive="ELDS",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://www.eldesconcierto.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/nacional/",
+        }
+    ),
+    "eldinamo": MediaOutlet(
+        name="El Dinamo",
+        diminutive="ELDI",
+        holding="Independiente*",
+        update_frequency="daily",
+        base_url="https://www.eldinamo.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/pais/",
+            NewsCategory.DEPORTES: "/deportes/",
+        }
+    ),
+    "elciudadano": MediaOutlet(
+        name="El Ciudadano",
+        diminutive="ELCI",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://www.elciudadano.com",
+        category_paths={
+            NewsCategory.NACIONAL: "/actualidad/",
+        }
+    ),
+    "cambio21": MediaOutlet(
+        name="Cambio21",
+        diminutive="C21",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://cambio21.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/politica",
+        }
+    ),
+    "df": MediaOutlet(
+        name="Diario Financiero",
+        diminutive="DF",
+        holding="Grupo Claro",
+        update_frequency="daily",
+        base_url="https://www.df.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/mercados/",
+        }
+    ),
+    "chilevision": MediaOutlet(
+        name="Chilevision",
+        diminutive="CHV",
+        holding="Paramount Global",
+        update_frequency="hourly",
+        base_url="https://www.chilevision.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticias/nacional/",
+            NewsCategory.DEPORTES: "/chv-deportes/noticias/",
+        }
+    ),
+    "24horas": MediaOutlet(
+        name="24 Horas",
+        diminutive="24H",
+        holding="TVN",
+        update_frequency="hourly",
+        base_url="https://www.24horas.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/actualidad/nacional/",
+            NewsCategory.DEPORTES: "/deportes/",
+        }
+    ),
+    "cooperativa": MediaOutlet(
+        name="Cooperativa",
+        diminutive="Coop",
+        holding="Independiente",
+        update_frequency="hourly",
+        base_url="https://www.cooperativa.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticias/pais/",
+        }
+    ),
+    "cnnchile": MediaOutlet(
+        name="CNN Chile",
+        diminutive="CNN",
+        holding="CNN",
+        update_frequency="hourly",
+        base_url="https://www.cnnchile.com",
+        category_paths={
+            NewsCategory.NACIONAL: "/pais/",
+            NewsCategory.DEPORTES: "/deportes/",
+        }
+    ),
+    "t13": MediaOutlet(
+        name="Teletrece",
+        diminutive="T13",
+        holding="TV Medios",
+        update_frequency="hourly",
+        base_url="https://www.t13.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticia/nacional/",
+        }
+    ),
+    "elmostrador": MediaOutlet(
+        name="El Mostrador",
+        diminutive="ELMO",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://www.elmostrador.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticias/pais/",
+        }
+    ),
+    "publimetro": MediaOutlet(
+        name="Publimetro",
+        diminutive="PM",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://www.publimetro.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticias/",
+            NewsCategory.DEPORTES: "/deportes/",
+        }
+    ),
+    "meganoticias": MediaOutlet(
+        name="Meganoticias",
+        diminutive="MEGA",
+        holding="Megamedia",
+        update_frequency="daily",
+        base_url="https://www.meganoticias.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/nacional/",
+            NewsCategory.DEPORTES: "/deportes/",
+        }
+    ),
+    "adn": MediaOutlet(
+        name="ADN",
+        diminutive="ADN",
+        holding="Ibero Americana Radio Chile",
+        update_frequency="hourly",
+        base_url="https://www.adnradio.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/noticias/",
+        }
+    ),
+    "exante": MediaOutlet(
+        name="EX-ANTE",
+        diminutive="EX",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://www.ex-ante.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/",
+        }
+    ),
+    "alaire": MediaOutlet(
+        name="Al Aire Libre",
+        diminutive="AAL",
+        holding="Compañía Chilena de Comunicaciones",
+        update_frequency="daily",
+        base_url="https://www.alairelibre.cl",
+        category_paths={
+            NewsCategory.DEPORTES: "/noticias/deportes/",
+        }
+    ),
+    "ellibero": MediaOutlet(
+        name="El Libero",
+        diminutive="LIBERO",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://ellibero.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/actualidad/",
+        }
+    ),
+    "puranoticia": MediaOutlet(
+        name="Puranoticia",
+        diminutive="Puranoticia",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://puranoticia.pnt.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/nacional/",
+        }
+    ),
+    "diariousach": MediaOutlet(
+        name="Diario USACH",
+        diminutive="USACH",
+        holding="Independiente",
+        update_frequency="daily",
+        base_url="https://www.diariousach.cl",
+        category_paths={
+            NewsCategory.NACIONAL: "/actualidad/nacional",
+        }
+    ),
+}
+
+def generate_consultas(categories: List[NewsCategory] = None) -> List[Dict]:
+    """
+    Genera la lista de consultas basada en los medios y categorías especificadas.
+    """
+    if categories is None:
+        categories = list(NewsCategory)
+
+    consultas = []
+    for outlet in MEDIA_OUTLETS.values():
+        for category in categories:
+            if category in outlet.category_paths:
+                consultas.append({
+                    "category": category.value.capitalize(),
+                    "site": outlet.base_url + outlet.category_paths[category],
+                    "source": f"{outlet.name}{' ' + category.value.capitalize() if category != NewsCategory.NACIONAL else ''}",
+                    "diminutive": outlet.diminutive,
+                    "content_length": "",
+                    "sentiment": "",
+                    "keywords": "",
+                    "popularity": "",
+                    "subcategory": "",
+                    "holding": outlet.holding,
+                    "update_frequency": outlet.update_frequency,
+                    "content_type": "article"
+                })
+    
+    return consultas
+
 class NewsSourceManager:
-    def __init__(self, consultas: List[Dict]):
-        self.consultas = consultas
+    def __init__(self, media_outlets: Dict[str, MediaOutlet]):
+        self.media_outlets = media_outlets
+        self.consultas = generate_consultas()
         self.path = Path(RUTA_SALIDA)
 
-    def get_sources_by_category(self, category: str) -> List[Dict]:
+    def get_sources_by_category(self, category: NewsCategory) -> List[Dict]:
         """Obtiene fuentes filtradas por categoría."""
         return [source for source in self.consultas 
-                if source["category"].lower() == category.lower()]
+                if source["category"].lower() == category.value.lower()]
 
     def get_hourly_sources(self) -> List[Dict]:
         """Obtiene las fuentes que necesitan actualización horaria."""
@@ -496,14 +321,14 @@ class NewsSourceManager:
                 if source["holding"].lower() == holding.lower()]
 
     def get_source_stats(self) -> Dict:
-        """Obtiene estadísticas de las fuentes."""
+        """Obtiene estadísticas detalladas de las fuentes."""
         categories = set(source["category"] for source in self.consultas)
         holdings = set(source["holding"] for source in self.consultas)
         
         return {
             "total_sources": len(self.consultas),
             "categories": {
-                category: len(self.get_sources_by_category(category))
+                category: len(self.get_sources_by_category(NewsCategory(category.lower())))
                 for category in categories
             },
             "update_frequency": {
@@ -512,18 +337,10 @@ class NewsSourceManager:
             },
             "holdings": {
                 holding: len(self.get_sources_by_holding(holding))
-                for holding in holdings
+                for holding in holdings if holding
             },
             "independent_sources": len(self.get_independent_sources())
         }
-
-    def export_stats(self, filename: str = "sources_stats.json") -> None:
-        """Exporta las estadísticas a un archivo JSON."""
-        stats = self.get_source_stats()
-        output_path = self.path.parent / filename
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(stats, f, indent=2, ensure_ascii=False)
 
     def validate_sources(self) -> List[Dict]:
         """Valida las fuentes y retorna errores encontrados."""
@@ -536,16 +353,13 @@ class NewsSourceManager:
                 "errors": []
             }
             
-            # Validar campos requeridos
             for field in required_fields:
                 if not source.get(field):
                     source_errors["errors"].append(f"Campo {field} vacío")
             
-            # Validar URL
             if not source["site"].startswith("https://"):
                 source_errors["errors"].append("URL debe comenzar con https://")
             
-            # Validar update_frequency
             if source.get("update_frequency") not in ["hourly", "daily"]:
                 source_errors["errors"].append("update_frequency debe ser 'hourly' o 'daily'")
             
@@ -554,18 +368,16 @@ class NewsSourceManager:
         
         return errors
 
+    def export_stats(self, filename: str = "sources_stats.json") -> None:
+        """Exporta las estadísticas a un archivo JSON."""
+        stats = self.get_source_stats()
+        output_path = self.path.parent / filename
+        
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(stats, f, indent=2, ensure_ascii=False)
+
+# Generar las consultas finales
+CONSULTAS = generate_consultas()
+
 # Crear una instancia global del manager
-source_manager = NewsSourceManager(CONSULTAS)
-
-# Funciones de utilidad para mantener compatibilidad con el código existente
-def get_sources_by_category(category: str) -> List[Dict]:
-    return source_manager.get_sources_by_category(category)
-
-def get_hourly_sources() -> List[Dict]:
-    return source_manager.get_hourly_sources()
-
-def validate_all_sources() -> List[Dict]:
-    return source_manager.validate_sources()
-
-def export_source_stats(filename: str = "sources_stats.json") -> None:
-    source_manager.export_stats(filename)
+source_manager = NewsSourceManager(MEDIA_OUTLETS)
