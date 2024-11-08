@@ -224,9 +224,10 @@ async def enviar_a_api(ruta_archivo: str) -> bool:
                     data=data,
                     timeout=30
                 ) as response:
-                    # Si el shortener inició el proceso (incluso si no ha terminado)
+                    # Aceptamos tanto 200 como 202 (Accepted)
                     if response.status in [200, 202]:
-                        logger.info(f"Archivo {os.path.basename(ruta_archivo)} recibido por el shortener")
+                        response_data = await response.json()
+                        logger.info(f"Archivo {os.path.basename(ruta_archivo)} recibido por el shortener. {response_data.get('message', '')}")
                         return True
                     else:
                         logger.error(f"El shortener no pudo recibir el archivo: {response.status}")
