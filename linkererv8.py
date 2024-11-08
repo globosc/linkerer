@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from typing import List, Dict
 from aiohttp import ClientSession
+from sources import CONSULTAS, RUTA_SALIDA, USER_AGENTS
 import re
-from sourcesv1 import CONSULTAS, RUTA_SALIDA, USER_AGENTS
 
 # Configuración de logging
 logging.basicConfig(
@@ -75,7 +75,7 @@ async def obtener_enlaces_google(consulta: Dict, session: ClientSession, pagina:
     url = (
         f"https://www.google.cl/search?q=site:{consulta['site']}"
         f"+after:{datetime.now().strftime('%Y-%m-%d')}"
-        f"+{consulta['category'].lower()}"  # Añadir categoría a la búsqueda
+        f"+{consulta['category'].lower()}"
         f"{'&start=' + str(start) if start > 0 else ''}"
     )
     
@@ -126,61 +126,30 @@ def limpiar_enlaces(enlaces: List[str]) -> List[str]:
             enlaces_filtrados.append(enlace_limpio)
     return list(set(enlaces_filtrados))
 
-async def procesar_fuentes_secuencial(consultas: List[Dict]) -> List[Dict]:
-    """Procesa las fuentes de forma secuencial con rate limiting."""
-    todos_resultados = []
-    rate_limiter = RateLimiter(calls_per_second=0.2)
-    
-    # Agrupar consultas por dominio base
-    dominios = {}
-    for consulta in consultas:
-        dominio_base = re.search(r'https?://[^/]+', consulta['site']).group()
-        if dominio_base not in dominios:
-            dominios[dominio_base] = []
-        dominios[dominio_base].append(consulta)
-    
-    connector = aiohttp.TCPConnector(ssl=False)
-    async with ClientSession(connector=connector) as session:
-        for dominio, consultas_dominio in dominios.items():
-            # Procesar todas las categorías de un dominio juntas
-            for consulta in consultas_dominio:
-                resultados = await procesar_fuente(consulta, session, rate_limiter)
-                
-                # Si encontramos un error 429, guardamos lo que tenemos y terminamos
-                if isinstance(resultados, str) and resultados == "ERROR_429":
-                    logger.warning(f"Se detectó bloqueo de Google (429) para {dominio}. Terminando proceso...")
-                    
-                    # Si tenemos resultados hasta ahora, los guardamos y enviamos
-                    if todos_resultados:
-                        if ruta_archivo := guardar_resultados(todos_resultados):
-                            await enviar_a_api(ruta_archivo)
-                            logger.info(f"Proceso interrumpido por 429. Se guardaron {len(todos_resultados)} resultados")
-                    return todos_resultados
-                
-                if resultados:
-                    todos_resultados.extend(resultados)
-                
-            # Pausa más larga entre dominios diferentes
-            await asyncio.sleep(random.uniform(8, 12))
-    
-    return todos_resultados
-
 async def procesar_fuente(consulta: Dict, session: ClientSession, rate_limiter: RateLimiter) -> List[Dict]:
-    """Procesa una fuente incluyendo múltiples páginas."""
+    """Procesa una fuente incluyendo múltiples páginas solo si es necesario."""
     logger.info(f"Procesando fuente: {consulta['source']} - Categoría: {consulta['category']}")
     todos_enlaces = []
     
-    for pagina in range(2):  # Intentar hasta 2 páginas de resultados
-        enlaces = await obtener_enlaces_google(consulta, session, pagina, rate_limiter)
+    # Obtener primera página
+    enlaces = await obtener_enlaces_google(consulta, session, 0, rate_limiter)
+    
+    if enlaces == "ERROR_429":
+        return "ERROR_429"
         
-        if enlaces == "ERROR_429":
-            return "ERROR_429"
-            
-        if not enlaces:
-            break
-            
+    if enlaces:
         todos_enlaces.extend(enlaces)
-        await asyncio.sleep(random.uniform(4, 6))
+        
+        # Solo intentar segunda página si encontramos 10 enlaces en la primera
+        if len(enlaces) == 10:
+            await asyncio.sleep(random.uniform(4, 6))
+            enlaces_pagina2 = await obtener_enlaces_google(consulta, session, 1, rate_limiter)
+            
+            if enlaces_pagina2 == "ERROR_429":
+                return "ERROR_429"
+                
+            if enlaces_pagina2:
+                todos_enlaces.extend(enlaces_pagina2)
     
     enlaces_limpios = limpiar_enlaces(todos_enlaces)
     
@@ -190,23 +159,31 @@ async def procesar_fuente(consulta: Dict, session: ClientSession, rate_limiter: 
         "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     } for enlace in enlaces_limpios]
 
-async def cargar_resultados_anteriores() -> List[Dict]:
-    """Carga los resultados de las últimas 24 horas."""
-    resultados = []
+async def cargar_resultados_hora_anterior() -> List[Dict]:
+    """Carga los resultados de la hora anterior o de las 23h del día anterior si es madrugada."""
     hora_actual = datetime.now()
     
-    for i in range(1, 25):
-        hora_anterior = (hora_actual - timedelta(hours=i)).strftime("%Y%m%d_%H")
-        ruta_archivo = os.path.join(RUTA_SALIDA, f'linkerer_{hora_anterior}.json')
-        
-        if os.path.exists(ruta_archivo):
-            try:
-                with open(ruta_archivo, 'r') as f:
-                    resultados.extend(json.load(f))
-            except Exception as e:
-                logger.error(f"Error al cargar {ruta_archivo}: {e}")
-                
-    return resultados
+    # Intentar cargar archivo de la hora anterior
+    hora_anterior = (hora_actual - timedelta(hours=1)).strftime("%Y%m%d_%H")
+    ruta_archivo = os.path.join(RUTA_SALIDA, f'linkerer_{hora_anterior}.json')
+    
+    # Si no existe y estamos en la madrugada (0-6 am), buscar archivo de las 23h del día anterior
+    if not os.path.exists(ruta_archivo) and 0 <= hora_actual.hour <= 6:
+        ultimo_archivo = (hora_actual - timedelta(days=1)).strftime("%Y%m%d_23")
+        ruta_archivo = os.path.join(RUTA_SALIDA, f'linkerer_{ultimo_archivo}.json')
+    
+    if os.path.exists(ruta_archivo):
+        try:
+            with open(ruta_archivo, 'r') as f:
+                resultados = json.load(f)
+                logger.info(f"Comparando con archivo: {os.path.basename(ruta_archivo)}")
+                return resultados
+        except Exception as e:
+            logger.error(f"Error al cargar {ruta_archivo}: {e}")
+    else:
+        logger.info("No se encontró archivo anterior para comparar duplicados")
+    
+    return []
 
 def filtrar_nuevos_resultados(nuevos: List[Dict], anteriores: List[Dict]) -> List[Dict]:
     """Filtra los resultados nuevos eliminando duplicados."""
@@ -231,7 +208,7 @@ def guardar_resultados(resultados: List[Dict]) -> str:
         return None
 
 async def enviar_a_api(ruta_archivo: str) -> bool:
-    """Envía los resultados al API de shortener."""
+    """Envía los resultados al API de shortener y termina cuando confirma la recepción."""
     if not ruta_archivo:
         return False
         
@@ -241,20 +218,52 @@ async def enviar_a_api(ruta_archivo: str) -> bool:
                 data = aiohttp.FormData()
                 data.add_field('file', f, filename=os.path.basename(ruta_archivo))
                 
+                # Solo esperamos la respuesta inicial del shortener
                 async with session.post(
                     'http://192.168.2.113:5000/shortener/',
                     data=data,
                     timeout=30
                 ) as response:
-                    if response.status == 200:
-                        logger.info("Archivo enviado exitosamente a la API")
+                    # Si el shortener inició el proceso (incluso si no ha terminado)
+                    if response.status in [200, 202]:
+                        logger.info(f"Archivo {os.path.basename(ruta_archivo)} recibido por el shortener")
                         return True
                     else:
-                        logger.error(f"Error al enviar a API: {response.status}")
+                        logger.error(f"El shortener no pudo recibir el archivo: {response.status}")
                         return False
     except Exception as e:
-        logger.error(f"Error enviando a API: {e}")
+        logger.error(f"Error al intentar enviar al shortener: {str(e)}")
         return False
+
+async def procesar_fuentes_secuencial(consultas: List[Dict]) -> List[Dict]:
+    """Procesa las fuentes de forma secuencial con rate limiting."""
+    todos_resultados = []
+    rate_limiter = RateLimiter(calls_per_second=0.2)
+    
+    # Agrupar consultas por dominio base
+    dominios = {}
+    for consulta in consultas:
+        dominio_base = re.search(r'https?://[^/]+', consulta['site']).group()
+        if dominio_base not in dominios:
+            dominios[dominio_base] = []
+        dominios[dominio_base].append(consulta)
+    
+    connector = aiohttp.TCPConnector(ssl=False)
+    async with ClientSession(connector=connector) as session:
+        for dominio, consultas_dominio in dominios.items():
+            for consulta in consultas_dominio:
+                resultados = await procesar_fuente(consulta, session, rate_limiter)
+                
+                if isinstance(resultados, str) and resultados == "ERROR_429":
+                    logger.warning(f"Se detectó bloqueo de Google (429) para {dominio}. Guardando resultados obtenidos...")
+                    return todos_resultados
+                
+                if resultados:
+                    todos_resultados.extend(resultados)
+                
+            await asyncio.sleep(random.uniform(8, 12))
+    
+    return todos_resultados
 
 async def main():
     """Función principal."""
@@ -262,19 +271,22 @@ async def main():
         todos_resultados = await procesar_fuentes_secuencial(CONSULTAS)
         
         if not todos_resultados:
-            logger.info("No se encontraron nuevos resultados")
+            logger.info("No se encontraron resultados")
             return
             
-        resultados_anteriores = await cargar_resultados_anteriores()
+        resultados_anteriores = await cargar_resultados_hora_anterior()
         resultados_filtrados = filtrar_nuevos_resultados(todos_resultados, resultados_anteriores)
         
         if not resultados_filtrados:
             logger.info("No hay nuevos resultados únicos")
             return
             
+        # Guardar y enviar resultados una sola vez
         if ruta_archivo := guardar_resultados(resultados_filtrados):
-            await enviar_a_api(ruta_archivo)
-            logger.info(f"Proceso completado. {len(resultados_filtrados)} nuevos resultados")
+            if await enviar_a_api(ruta_archivo):
+                logger.info(f"Proceso completado. {len(resultados_filtrados)} nuevos resultados enviados al shortener")
+            else:
+                logger.error("No se pudo enviar el archivo al shortener")
                 
     except Exception as e:
         logger.exception("Error en la ejecución principal")
