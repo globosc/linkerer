@@ -220,7 +220,7 @@ async def enviar_a_api(ruta_archivo: str) -> bool:
                 
                 # Solo esperamos la respuesta inicial del shortener
                 async with session.post(
-                    'http://192.168.2.113:5000/shortener/',
+                    'http://172.16.1.2:5000/shortener/',
                     data=data,
                     timeout=30
                 ) as response:
