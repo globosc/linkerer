@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 # Configuración de la carpeta de salida
-RUTA_SALIDA = "/home/globoscx/unews/salidas/input"
+RUTA_SALIDA = "/home/globoscx/data/linkerer"
 os.makedirs(RUTA_SALIDA, exist_ok=True)
 
 # Definir los User-Agents
